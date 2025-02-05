@@ -1,10 +1,10 @@
 import pygame
 from constants import *
 from player import Player
-from asteroidfield import *
 from shot import Shot 
 from asteroid import Asteroid
 from record import game_over_screen, load_high_scores
+from levelmanadger import LevelManadger
 
 def main():
     pygame.init()
@@ -23,11 +23,11 @@ def main():
     Shot.containers = (shots, updatables, drawbles)
     Player.containers = (updatables, drawbles)
     Asteroid.containers = (asteroids, updatables, drawbles)
-    AsteroidField.containers = (updatables,)
+    
     
     while True:
         player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-        asteroid_field = AsteroidField()
+        level_manager = LevelManadger(asteroids, updatables, drawbles)
         score = 0
         game_running = True
 
@@ -37,6 +37,7 @@ def main():
                     return
 
             updatables.update(dt)
+            level_manager.update(dt)
             
             for asteroid in asteroids:
                 for shot in shots:

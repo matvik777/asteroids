@@ -9,7 +9,18 @@ class Asteroid(CircleShape):
         super().__init__(x, y, radius)
 
     def draw(self, screen):
-        pygame.draw.circle(screen, "white", self.position, self.radius, 2)
+     # Базовая форма астероида, нормализованная по размеру
+        base_points = [
+            (-0.9, -0.3), (-0.4, -1), (0.4, -0.8),
+            (1, -0.2), (0.8, 0.5), (0, 1), (-0.6, 0.6)
+        ]
+    
+    # Масштабируем точки в зависимости от радиуса астероида
+        points = [(self.position.x + x * self.radius, self.position.y + y * self.radius) 
+                for x, y in base_points]
+    
+        pygame.draw.polygon(screen, "white", points, 2)
+
 
     def update(self, dt):
         self.position += self.velocity * dt
