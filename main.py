@@ -4,15 +4,16 @@ from player import Player
 from asteroidfield import *
 from shot import Shot 
 from asteroid import Asteroid
+from record import game_over_screen, load_high_scores
+
 def main():
     pygame.init()
     pygame.font.init()
     font = pygame.font.SysFont(None, 36)
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
-     
-    dt = 0
     
+    dt = 0
     
     updatables = pygame.sprite.Group()
     drawbles = pygame.sprite.Group()
@@ -23,41 +24,56 @@ def main():
     Player.containers = (updatables, drawbles)
     Asteroid.containers = (asteroids, updatables, drawbles)
     AsteroidField.containers = (updatables,)
-    player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-    asteroid_field = AsteroidField()
-    
-    score = 0
     
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return
+        player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+        asteroid_field = AsteroidField()
+        score = 0
+        game_running = True
 
-        updatables.update(dt)
-        
-        for asteroid in asteroids:
-            for shot in shots:
-                if shot.collides_with(asteroid):
-                    shot.kill()
-                    asteroid.split()
-                    score += 100
-                    
-        for asteroid in asteroids:
-            if player.collides_with(asteroid):
-                print("Game over!")
-                return  # Завершение программы
+        while game_running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
 
-        screen.fill("black")
-        for sprite  in drawbles:
-            sprite.draw(screen)
+            updatables.update(dt)
             
-        score_text = font.render(f"Score: {score}", True, (255,255,255))
-        screen.blit(score_text, (10,10))
-        pygame.display.flip()
+            for asteroid in asteroids:
+                for shot in shots:
+                    if shot.collides_with(asteroid):
+                        shot.kill()
+                        asteroid.split()
+                        score += 100
+                        
+            for asteroid in asteroids:
+                if player.collides_with(asteroid):
+                    game_running = False
+                    break
 
-        # limit the framerate to 60 FPS
-        dt = clock.tick(60)/1000
+            screen.fill("black")
+            for sprite in drawbles:
+                sprite.draw(screen)
+                
+            # Display current score
+            score_text = font.render(f"Score: {score}", True, (255,255,255))
+            screen.blit(score_text, (10,10))
+            
+            # Display high score
+            high_scores = load_high_scores()
+            if high_scores:
+                high_score_text = font.render(f"High Score: {high_scores[0]['score']}", True, (255,255,255))
+                screen.blit(high_score_text, (10,50))
+            
+            pygame.display.flip()
+            dt = clock.tick(60)/1000
 
+        # Clear all sprites
+        for sprite in updatables:
+            sprite.kill()
+            
+        # Show game over screen and handle high score input
+        if game_over_screen(screen, score) is None:
+            return
 
 if __name__ == "__main__":
     main()
